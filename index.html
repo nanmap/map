@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test OpenLayers</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+	body {
+		margin: 0px;
+		padding: 0px;
+	}
+	div {
+		margin: 0px;
+		padding: 0px;
+	}
+
+	#map {
+		margin: 0px;
+		padding: 0px;
+		position: relative;
+		z-index: 0;
+		border: 1px solid black;
+		background-color: rgb(127,127,127);
+	}
+
+	#title {
+		margin: 0px;
+		padding: 0px;
+		position: relative;
+		z-index: 100;
+		color: yellow;
+		background-color: #333333;
+		height: 40px;
+	}
+
+	#title h1 {
+		margin: 0px;
+		padding: 0px;
+	}
+
+	#location {
+		margin: 0px;
+		padding: 0px;
+		left: 10px;
+		width: 50%;
+		position: absolute;
+		bottom: 10px;
+		z-index: 101;
+		color: #000000;
+		font-Family: Tahoma;
+		font-Size: 12px;
+	}
+</style>
+</head>
+<body onload="init()">
+	<div id="title">
+		<h1>OpenLayers Test</h1>
+	</div>
+	<div align="center" style="margin: 0px;padding: 0px;">
+		<div id="map" ></div>
+	</div>
+	<div>
+		
+	</div>
+	<div id="location"> </div>
+</body>
+<script src="lib/jquery-1.10.2.min.js"></script>
+<script src="lib/openlayers.debug.js"></script>
+<script src="lib/jquery.animate-shadow.js"></script>
+<script src="test.js"></script>
+<script defer="defer" type="text/javascript">
+	$.fn.setHeight = function (control) {
+		var $w = $(window),
+		$title = control,
+		$this = $(this);
+		var init = function () {
+			var wH = $w.height(),
+			wW = $w.width(),
+			tW = $title.width(),
+			tH = $title.height();
+			$this.css({height:(wH - tH - 2) + 'px'});
+		};
+
+		init();
+		$w.resize(init);
+	};
+
+	var initMap = function () {
+		var map;
+		var format;
+		var bounds = new OpenLayers.Bounds(
+			73.44695116999999, 6.318855145999999,
+			135.0857977, 53.55788027
+		);
+
+		var options = {
+			controls: [],
+			maxExtent: bounds,
+			maxResolution: 0.2407767442578125,
+			projection: "EPSG:4326",
+			units: 'degrees'
+		};
+
+		map = new OpenLayers.Map('map',options);
+		format = 'image/png';
+		tiled = new OpenLayers.Layer.WMS(
+			"Geoserver layers - Tiled", "http://localhost:8080/geoserver/china/wms",
+			{
+				LAYERS: 'china1',
+				STYLES: '',
+				format: format,
+				tiled: true,
+				tilesOrigin : map.maxExtent.left + ',' + map.maxExtent.bottom,
+			},
+			{
+				buffer: 0,
+				displayOutsideMaxExtent: true,
+				isBaseLayer: true,
+				yx : {'EPSG:4326' : true}
+			}
+		);
+		map.addLayers([tiled]);
+
+		var panZoomBar = new OpenLayers.Control.PanZoomBar({
+			position: new OpenLayers.Pixel(2, 15)
+		});
+		panZoomBar.zoomWorldIcon=true;
+		panZoomBar.zoomStopHeight=7;
+		map.addControl(panZoomBar);
+
+		var panel = new OpenLayers.Control.NavToolbar();
+		map.addControl(panel);
+		map.addControl(new OpenLayers.Control.ScaleLine());
+		var positionControl = new OpenLayers.Control.MousePosition({element: $('#location').get(0)});
+		positionControl.formatOutput = formatLonlat;
+		positionControl.numDigits = 3;
+		map.addControl(positionControl);
+		var overView = new OpenLayers.Control.OverviewMap({
+			maximizeTitle: '展开鹰眼图',
+			minimizeTitle: '折叠鹰眼图'
+		});
+		overView.resolutionFactor=2;
+		map.addControl(overView);
+		map.zoomToExtent(bounds);
+	};
+
+	function init(){
+		//map.setCenter(new OpenLayers.LonLat(-100, 60), 3);
+		$('#title').animate({boxShadow: '0 0 50px 0 #333333'});
+		$('#map').setHeight($('#title'));
+		initMap();
+		var a = new MuleGis.SubArgumentClass();
+		//a.name="kola";
+		a.hello();
+		var b = new MuleGis.SubArgumentClass(3,4,5);
+		b.name="nvsheng";
+		b.hello();
+	};
+
+</script>
+</html>

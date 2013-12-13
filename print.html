@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<head>
+	<title>地图打印</title>
+	<link href="css/printmap.css" rel="stylesheet">
+	<link href="theme/default/style.css" rel="stylesheet" >
+	<link href="css/mulegis.css" rel="stylesheet" >
+</head>
+<body>
+	<div class="title">
+		<div id="input" class="titleEle">
+			<span>标题:</span>
+			<input id="titleInput" type="text" size ="60"></input>
+			<div id="printButton"></div>
+		</div>
+		<div id="label" >
+			<span id ="labelSpan"></span>
+		</div>
+	</div>
+	<div id="map" style="width:640px;height:420px;text-align:center;"></div>
+</body>
+<script src="lib/jquery.min.js"></script>
+<script src="lib/bootstrap.min.js"></script>
+<script src="lib/jquery-ui-bootstrap.min.js"></script>
+<script src="lib/openlayers.debug.js"></script>
+<script src="lib/MuleGIS.debug.js"></script>
+<script src="lib/googlemap.js"></script>
+<script defer="defer" type="text/javascript">
+	var printButton = document.getElementById("printButton");
+	printButton.onclick = function () {
+		var label = document.getElementById("labelSpan");
+		var title = document.getElementById("titleInput");
+		label.innerText = title.value;
+		window.print();
+	};
+</script>
+</html>
+

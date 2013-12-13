@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<head>
+
+<style type="text/css">
+	body {
+		margin: 0px;
+		padding: 0px;
+	}
+	#map {
+		position: relative;
+		z-index: 0;
+		border: 1px solid black;
+		background-color: rgb(127,127,127);
+	}
+	#location {
+		left: 10px;
+		width: 50%;
+		position: absolute;
+		bottom: 8px;
+		z-index: 101;
+		color: #000000;
+		font-Family: Tahoma;
+		font-Size: 12px;
+	}
+</style>
+</head>
+<body onload="init()">
+	<div id = "map">
+	</div>
+	<div id="location"> </div>
+</body>
+<script src="lib/jquery-1.10.2.min.js"></script>
+<script src="lib/openlayers.debug.js"></script>
+<script src = "lib/MuleGIS.debug.js"></script>
+<script defer="defer" type="text/javascript">
+	var initMap = function () {
+		var map;
+		var format;
+		var bounds = new OpenLayers.Bounds(
+			73.44695116999999, 6.318855145999999,
+			135.0857977, 53.55788027
+		);
+
+		var options = {
+			controls: [],
+			maxExtent: bounds,
+			maxResolution: 0.2407767442578125,
+			projection: "EPSG:4326",
+			units: 'degrees'
+		};
+
+		map = new OpenLayers.Map('map',options);
+		format = 'image/png';
+		tiled = new OpenLayers.Layer.WMS(
+			"Geoserver layers - Tiled", "http://localhost:8080/geoserver/china/wms",
+			{
+				LAYERS: 'china1',
+				STYLES: '',
+				format: format,
+				tiled: true,
+				tilesOrigin : map.maxExtent.left + ',' + map.maxExtent.bottom,
+			},
+			{
+				buffer: 0,
+				displayOutsideMaxExtent: true,
+				isBaseLayer: true,
+				yx : {'EPSG:4326' : true}
+			}
+		);
+		map.addLayers([tiled]);
+
+		var panZoomBar = new OpenLayers.Control.PanZoomBar({
+			position: new OpenLayers.Pixel(2, 15)
+		});
+		panZoomBar.zoomWorldIcon=true;
+		panZoomBar.zoomStopHeight=7;
+		map.addControl(panZoomBar);
+	
+		var panel = new OpenLayers.Control.NavToolbar();
+		map.addControl(panel);
+		var scaleLine = new MuleGIS.Control.ScaleLine();
+		map.addControl(scaleLine);
+		var positionControl = new MuleGIS.Control.MousePosition({element: $('#location').get(0)});
+		map.addControl(positionControl);
+		var overView = new MuleGIS.Control.Overview({
+			maximizeTitle: '展开鹰眼图',
+			minimizeTitle: '折叠鹰眼图'
+		});
+		map.addControl(overView);
+		map.zoomToExtent(bounds);
+	};
+	
+	function init(){
+		$('#map').css({height : $(window).height() + 'px'});
+		initMap();
+	}
+</script>
+</html>

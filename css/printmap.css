@@ -1,0 +1,52 @@
+html,body {
+}
+.gmnoscreen,
+.gmnoprint {
+	display:none;
+}
+#label {
+	display: none;
+}
+.map {
+	width: 640px;
+	height: 520px;
+	text-align: center;
+}
+.map-control {
+	display: none;
+}
+.print {
+	position: absolute;
+}
+#printButton {
+	background: url(../img/print.png);
+	width: 70px;
+	height: 29px;
+	display: inline-block;
+	background-repeat: no-repeat;
+	top: 10px;
+	position: relative;
+}
+#printButton:hover {
+	background: url(../img/print.png) 0px 62px;
+}
+#printButton:active {
+	background: url(../img/print.png) 0px 29px;
+}
+.title {
+	font-family: Roboto,Arial,sans-serif;
+	font-size: 14px;
+	text-align: center;
+	padding: 10px;
+}
+.titleEle {
+	display: block;
+}
+@media print {
+	.titleEle {
+		display: none;
+	}
+	#label {
+		display: block;
+	}
+}

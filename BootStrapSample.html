@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>MuleGIS for Javascript Sample</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="css/bootstrap.css" rel="stylesheet">
+<link href="css/font-awesome.css" rel="stylesheet">
+<link href="css/jquery-ui-bootstrap.css" rel="stylesheet">
+<link href="css/mulegis.css" rel="stylesheet">
+<style style="text/css">
+a {
+	cursor: pointer;
+	font-weight: lighter;
+}
+
+body {
+	margin: 0px;
+	padding: 0px;
+	background-color: #CCC;
+}
+
+#container, 
+#topbar, 
+#floating-toolbar {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	z-index: 2000;
+}
+.gmnoprint {
+	display:none;
+}
+
+#location {
+	margin: 0px;
+	padding: 0px;
+	left: 10px;
+	width: 50%;
+	position: absolute;
+	bottom: 5px;
+	z-index: 101;
+	color: #000000;
+	font-Family: 宋体;
+	font-Size: 12px;
+}
+</style>
+</head>
+<body style="font-size: 14px;line-height:20px;">
+	<div id="headDiv" class="navbar navbar-default navbar-fixed-top navbar-inner" role="navigation" style="height: 40px">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+			  <span class="sr-only">Toggle navigation</span>
+			  <span class="icon-bar"></span>
+			  <span class="icon-bar"></span>
+			  <span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand" >电子政务开发部 WebGIS for Javascript 平台</a>
+		</div>
+		<div class="collapse navbar-collapse">
+			<ul class="nav navbar-nav" >
+				<li>
+					<a id="layer-manage" >图层管理</a>
+				</li>
+				<li>
+					<a id="lonlat-location" >坐标定位</a>
+				</li>
+				<li class = "dropdown">
+					<a class = "dropdown-toggle" data-toggle="dropdown">图形测量<b class="caret"></b></a>
+					<ul class = "dropdown-menu" role="menu">
+						<li> <a id ="measureLine">测长度</a> </li>
+						<li> <a id ="measurePolygon">测面积</a> </li>
+						<li role="presentation" class="divider"></li>
+						<li> <a id ="clearMeasure">清除</a> </li>
+					</ul>
+				</li>
+				<li class = "dropdown">
+					<a class = "dropdown-toggle" data-toggle="dropdown">编辑<b class="caret"></b></a>
+					<ul class = "dropdown-menu" role="menu">
+						<li> <a id ="drawFeature">绘制</a> </li>
+						<li> <a id ="modifyFeature">修改</a> </li>
+						<li role="presentation" class="divider"></li>
+						<li> <a id ="deleteFeature">删除</a> </li>
+						<li> <a id ="saveFeature">保存</a> </li>
+						<li role="presentation" class="divider"></li>
+						<li> <a id ="cancelFeature">取消</a> </li>
+					</ul>
+				</li>
+				<li>
+					<a id="drawGraphic">动态标绘</a>
+				</li>
+				<li>
+					<a id="mapPrint">打印</a>
+				</li>
+				<form class="navbar-form navbar-left" id="search-form">
+					<div class="form-group">
+						<input class="form-control" id="searchText"  name="q" placeholder="查询" type="text">
+					</div>
+					<div id="btnSearch" class="btn btn-default btn-search" title="查询"><i class="icon-search"></i></div>
+				</form>
+			</ul>
+		</div>
+	</div>
+	<div align="center" style="position:absolute;top: 40px;width: 100%;padding: 0px;margin: 0px;">
+		<div id="map" >
+		</div>
+	</div>
+	<div id="location"> </div>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+	<script src="lib/jquery-ui-bootstrap.min.js"></script>
+	<script src="lib/openlayers.debug.js"></script>
+	<script src="lib/MuleGIS.debug.js"></script>
+	<script src="lib/googlemap.js"></script>
+	<script defer="defer" type="text/javascript">
+		OpenLayers.ProxyHost = "cgi/proxy.cgi?url=";
+		var vectorLayer = null;
+		var saveStrategy = null;
+		var layerTree = null;
+		var lonlatLocation = null;
+		var measureControl = new MuleGIS.Control.Measure();
+		var printControl = null;
+		var queryControl = null;
+		var drawFeatureControl = null;
+		var featureManagerControl = null;
+		var map = null;
+		
+		$.fn.setHeight = function (control) {
+			var $w = $(window);
+			$title = control;
+			$this = $(this);
+			var init = function () {
+				var wH = $w.height(),
+				wW = $w.width(),
+				tW = $title.width(),
+				tH = $title.height();
+				$this.css({height:(wH - tH - 3) + 'px'});
+			};
+
+			init();
+			$w.resize(init);
+		};
+		var initMap = function () {
+			var initilize = new MuleGIS.Initilize();
+			var bounds = initilize.bounds;
+			var options = initilize.options;
+			map = new OpenLayers.Map('map',options);
+			var save = new OpenLayers.Strategy.Save();
+			save.events.on({
+					'success': function () {
+						alert("add")
+					}
+			});
+			
+			map.addLayers(initilize.layers);
+
+			layerTree = initilize.layerTree;
+			printControl = initilize.printControl;
+			lonlatLocation = initilize.lonlatLocation;
+			measureControl = initilize.measureControl;
+			queryControl = initilize.queryControl;
+			drawFeatureControl = initilize.drawFeatureControl;
+			featureManagerControl = initilize.featureManager;
+			queryControl.callback = this.handleResult;
+			
+			map.addControls(initilize.controls);
+			
+			bounds.transform(map.displayProjection,map.projection);
+			map.zoomToExtent(bounds);
+		};
+		
+		this.handleResult = function (features) {
+			for (var i = 0; i < features.length; i++) {
+				var feature = features[i];
+				for (var source in feature.attributes) {
+					if(source === "NAME99") {
+						var value = feature.attributes[source];
+						var point = feature.geometry.getCentroid();
+						point.transform(map.displayProjection,map.projection);
+						map.addPopup(new OpenLayers.Popup.FramedCloud(
+							"chicken", 
+							new OpenLayers.LonLat(point.x,point.y),
+							null,
+							"名称:" + value,
+							null,
+							true
+						));
+					}
+				}
+			}
+		};
+
+		$('#layer-manage').click(function () {
+			layerTree.toggle();
+		});
+		$('#lonlat-location').click(function () {
+			lonlatLocation.toggle();
+		});
+		$(function(){
+			$('#map').setHeight($('#headDiv'));
+			$(window).resize($('#map').setHeight($('#headDiv')));
+			initMap();
+		});
+
+		$("#measureLine").click(function () {
+			measureControl.activeMeasureLine();
+		});
+		$("#measurePolygon").click(function () {
+			measureControl.activeMeasurePolygon();
+		});
+
+		$("#clearMeasure").click(function () {
+			measureControl.clear();
+		});
+		$('#mapPrint').click(function () {
+			printControl.print();
+		});
+		$('#drawGraphic').click(function () {
+			drawFeatureControl.toggle();
+		});
+		$('#btnSearch').click(function () {
+			var value = $('#searchText').val();
+			if (value !== "" && value !=="查询" ) {
+				queryControl.value = value;
+				queryControl.query();
+			}
+		});
+		$('#drawFeature').click(function () {
+			featureManagerControl.activate();
+		})
+		$('#saveFeature').click(function () {
+			featureManagerControl.save();
+		})
+		$('#modifyFeature').click(function () {
+			featureManagerControl.activateModify();
+		})
+		$('#deleteFeature').click(function () {
+			featureManagerControl.activateDelete();
+		})
+		$('#cancelFeature').click(function () {
+			featureManagerControl.cancel();
+		})
+	</script>
+  </body>
+</html>
